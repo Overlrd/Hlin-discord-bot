@@ -1,11 +1,16 @@
 import discord 
 from discord.ext import commands 
+from discord.ext.commands import CommandNotFound
+
 import os 
 import requests
 import json
 from discord import app_commands
 from pymongo import MongoClient
 from datetime import datetime
+# e load env variables
+from dotenv import load_dotenv
+load_dotenv()
 
 import pprint
 # import db 
@@ -19,7 +24,7 @@ TOKEN = os.environ['TOKEN']
 bot = commands.Bot(command_prefix="/", intents = discord.Intents.all())
 
 ## set up  mongo db 
-MONGO_CONN_LINK = my_secret = os.environ['CONN_LINK']
+MONGO_CONN_LINK =  os.environ['CONN_LINK']
 Client_Mongo = MongoClient(MONGO_CONN_LINK)
 
 quotes_db = Client_Mongo.quotes
@@ -43,7 +48,12 @@ def get_quote():
   quote = response_json[0]['q'] + " -" + response_json[0]['a']
   return quote
 
-
+def get_quote_from_db():
+    #get random q
+    random = quotes_collection.aggregate([{ "$sample": { "size": 1 } }])
+    for i in random:
+      quote = f"{i['quote']} -{i['author']}"
+    return quote
 
 
 
@@ -59,6 +69,11 @@ def post_quote(quote_text, quote_author):
   
 
 
+@bot.event
+async def on_command_error(ctx, error):
+  if isinstance(error, CommandNotFound):
+      em = discord.Embed(title=f"Sorry :-( ", description=f"I Don't support this command.", color=ctx.author.color) 
+      await ctx.send(embed=em, ephemeral = True, mention_author = True)
 
 
 @bot.event 
@@ -78,7 +93,8 @@ async def on_ready():
       
 @bot.tree.command(name = "inspire")
 async def inspire(interaction : discord.Interaction):
-    quote = get_quote()
+    #quote = get_quote()
+    quote = get_quote_from_db()
     await interaction.response.send_message(quote, ephemeral = True )
 
 

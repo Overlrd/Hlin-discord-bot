@@ -2,3 +2,6 @@
 **/__pycache__
 .hlin_env/
 mongo.py
+todo.txt
+test.py
+config.json

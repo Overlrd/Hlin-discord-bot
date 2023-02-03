@@ -71,6 +71,20 @@ def post_quote(quote_text, quote_author):
   except Exception as e:
     print(e)
 
+## update or create config for dayly quote
+def update_dayly_quote_config(user_id, set_dayly, file_path="config.json"):
+    doc = {str(user_id) : {"dayly" : str(set_dayly), "when" : "default"}}
+
+    with open(file_path, "r+") as file:
+        data = json.load(file)
+        dayly_config = data['dayly_quotes_config']
+        dayly_config.update(doc)
+        data['dayly_quotes_config'] = dayly_config
+        print(data)
+        file.seek(0)
+        json_object = json.dump(data, file, indent=4)
+        file.close()
+
 
 """ UTILITARY CLASSES """
 class perspective_client():
@@ -101,12 +115,15 @@ class My_Button(discord.ui.View):
   @discord.ui.button(label="Activate", style= discord.ButtonStyle.primary)
   async def activate(self ,interaction : discord.Interaction, button : discord.ui.Button ):
     #await interaction.user.send("you clicked me ")      
-    await interaction.response.send_message("Morning Quotes activated")
+    update_dayly_quote_config(interaction.user.id, 1)
+    await interaction.response.send_message(f"Morning Quotes activated")
 
   @discord.ui.button(label="Deactivate", style= discord.ButtonStyle.danger)
   async def deactivate(self ,interaction : discord.Interaction, button : discord.ui.Button ):
-    #await interaction.user.send("you clicked me ")      
+    #await interaction.user.send("you clicked me ") 
+    update_dayly_quote_config(interaction.user.id, 0)     
     await interaction.response.send_message("Morning quotes deactivated")
 
+    
 
 my_perspective_client = perspective_client(PERSPECTIVE_API)

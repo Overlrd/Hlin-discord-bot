@@ -126,14 +126,15 @@ async def inspire(interaction : discord.Interaction):
 @bot.tree.command(name = "add_quote", description="Add a quote to Hlin")
 async def add_quote(interaction : discord.Interaction , quote: str):
   toxicity = my_perspective_client.analyze_quote(quote)
-  print(toxicity)
+  print(f"{toxicity} for {quote}")
 
   if toxicity < 0.6:
-    await interaction.response.send_message(f"{quote} by  {interaction.user.mention} ", ephemeral = True)
     post_quote(quote, str(interaction.user))
+    await interaction.response.send_message(f"{quote} by  {interaction.user.mention} ", ephemeral = True)
+
   else:
     await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ", ephemeral = True)
-    
+    #print("message is toxic ") 
 
 @bot.tree.command(name="dayly_quotes", description="Better mornings")
 async def test_btn(interaction : discord.Interaction):

@@ -12,87 +12,12 @@ from datetime import datetime
 # e load env variables
 from dotenv import load_dotenv
 load_dotenv()
-## import google perspective
-from g_perspective import perspective_client , PERSPECTIVE_API
-my_perspective_client = perspective_client(PERSPECTIVE_API)
-
-# API URL
-API_URL = 'https://zenquotes.io/api/random'
-
+from utils import quotes_collection , get_quote_from_db , post_quote, config_dayly_quotes, my_perspective_client, My_Button
 
 ## set up the bot 
 TOKEN = os.environ['TOKEN']
 bot = commands.Bot(command_prefix="/", intents = discord.Intents.all())
 
-## set up  mongo db 
-MONGO_CONN_LINK =  os.environ['CONN_LINK']
-Client_Mongo = MongoClient(MONGO_CONN_LINK)
-
-
-quotes_db = Client_Mongo.quotes
-quotes_collection = quotes_db.quotes_collection
-
-res_mongo = quotes_collection.find()
-#printer = pprint.PrettyPrinter()
-
-def get_quote():
-  #make a get request to the zen quotes api
-  response = requests.get(API_URL)
-  #converting the response to json
-  response_json = json.loads(response.text)
-  
-  #get the message with the key 'q' and the author with  the     key 'a'
-  quote = response_json[0]['q'] + " -" + response_json[0]['a']
-  return quote
-
-
-def get_quote_from_db():
-    #get random q
-    random = quotes_collection.aggregate([{ "$sample": { "size": 1 } }])
-    for i in random:
-      quote = f"{i['quote']} -{i['author']}"
-    return quote
-
-
-def config_dayly_quotes(user_id, is_dayly_activate , hour, filename="config.json" ):
-  dic = {
-    "user": user_id,
-    "dayly":is_dayly_activate,
-    "when":hour}
-
-  with open(filename, "r+") as file :
-    file_data = json.load(file)
-    print(file_data)
-    for i in file_data['dayly_quotes_config']:
-      print(i['user'])
-    file_data['dayly_quotes_config'].append(dic)
-    file.seek(0)
-    json.dump(file_data, file, indent=4)
-
-def post_quote(quote_text, quote_author):
-  now = datetime.now().strftime("%y:%m:%d:%H:%M:%S")
-  #quote_author = quote_author.split("@", 1)[1]
-  doc = {"author":quote_author, "quote":quote_text, "date" : now}
-  try :
-    quotes_collection.insert_one(doc)
-    print("quote sended ")
-  except Exception as e:
-    print(e)
-
-class My_Button(discord.ui.View):
-  def __init__(self):
-    super().__init__()
-  @discord.ui.button(label="Activate", style= discord.ButtonStyle.primary)
-  async def activate(self ,interaction : discord.Interaction, button : discord.ui.Button ):
-    #await interaction.user.send("you clicked me ")      
-    await interaction.response.send_message("Morning Quotes activated")
-
-  @discord.ui.button(label="Deactivate", style= discord.ButtonStyle.danger)
-  async def deactivate(self ,interaction : discord.Interaction, button : discord.ui.Button ):
-    #await interaction.user.send("you clicked me ")      
-    await interaction.response.send_message("Morning quotes deactivated")
-
-  
 
 @bot.event
 async def on_command_error(ctx, error):

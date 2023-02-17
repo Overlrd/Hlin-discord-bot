@@ -72,18 +72,23 @@ def post_quote(quote_text, quote_author):
     print(e)
 
 ## update or create config for dayly quote
-def update_dayly_quote_config(user_id, set_dayly, file_path="config.json"):
-    doc = {str(user_id) : {"dayly" : str(set_dayly), "when" : "default"}}
+def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config.json"):
+    doc = {str(user_id): {"dayly": str(set_dayly), "when": str(when)}}
 
-    with open(file_path, "r+") as file:
+    with open(file_path, "r") as file:
         data = json.load(file)
         dayly_config = data['dayly_quotes_config']
         dayly_config.update(doc)
-        data['dayly_quotes_config'] = dayly_config
-        print(data)
-        file.seek(0)
-        json_object = json.dump(data, file, indent=4)
-        file.close()
+
+    with open(file_path, "w") as file:
+        json.dump(data, file, indent=4)
+
+    if set_dayly:
+        message = f"Daily quotes have been activated for {when}."
+    else:
+        message = "Daily quotes have been deactivated."
+        
+    return message
 
 
 """ UTILITARY CLASSES """
@@ -110,20 +115,49 @@ class perspective_client():
 
 
 class My_Button(discord.ui.View):
-  def __init__(self):
-    super().__init__()
-  @discord.ui.button(label="Activate", style= discord.ButtonStyle.primary)
-  async def activate(self ,interaction : discord.Interaction, button : discord.ui.Button ):
-    #await interaction.user.send("you clicked me ")      
-    update_dayly_quote_config(interaction.user.id, 1)
-    await interaction.response.send_message(f"Morning Quotes activated")
+    def __init__(self, when):
+        self.when = when
+        super().__init__()
+        
+    @discord.ui.button(label="Activate", style= discord.ButtonStyle.primary)
+    async def activate(self, interaction: discord.Interaction, button: discord.ui.Button):
+        print('should update config here ')
 
-  @discord.ui.button(label="Deactivate", style= discord.ButtonStyle.danger)
-  async def deactivate(self ,interaction : discord.Interaction, button : discord.ui.Button ):
-    #await interaction.user.send("you clicked me ") 
-    update_dayly_quote_config(interaction.user.id, 0)     
-    await interaction.response.send_message("Morning quotes deactivated")
+        message = await update_dayly_quote_config(interaction.user.id, 1, when=self.when)
 
-    
+        await print("should send message here ")
+        await interaction.response.send_message(message, ephemeral=True)
+
+    @discord.ui.button(label="Deactivate", style= discord.ButtonStyle.danger)
+    async def deactivate(self, interaction: discord.Interaction, button: discord.ui.Button):
+        print('should update config here ')
+        message = await update_dayly_quote_config(interaction.user.id, 0)
+        await print('should send message here ')
+        await interaction.response.send_message(message, ephemeral=True)
+
+def load_config_for_user(user_id, file_path="config.json"):
+    with open(file_path, "r") as file:
+        data = json.load(file)
+        dayly_config = data.get('dayly_quotes_config', {})
+        return dayly_config.get(str(user_id), {})
+
+class ToggleButton(discord.ui.Button):
+    def __init__(self, active, **kwargs):
+        self.active = active
+        label = "Deactivate" if active else "Activate"
+        super().__init__(label=label, **kwargs)
+
+    async def callback(self, interaction: discord.Interaction):
+        self.active = not self.active
+        label = "Deactivate" if self.active else "Activate"
+        self.label = label
+        await interaction.response.edit_message(view=self.view)
+        update_dayly_quote_config(interaction.user.id, int(self.active), when=self.view.when)
+
+class MyView(discord.ui.View):
+    def __init__(self, when, active):
+        self.when = when
+        super().__init__(timeout=None)
+        self.add_item(ToggleButton(active))
 
 my_perspective_client = perspective_client(PERSPECTIVE_API)

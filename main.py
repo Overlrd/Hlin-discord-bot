@@ -6,13 +6,15 @@ from googleapiclient import discovery
 import os 
 import requests
 import json
-from discord import app_commands
+from discord import app_commands, Embed
 from pymongo import MongoClient
 from datetime import datetime
+import re
+
 # e load env variables
 from dotenv import load_dotenv
 load_dotenv()
-from utils import quotes_collection , get_quote_from_db , post_quote, update_dayly_quote_config, my_perspective_client, My_Button 
+from utils import load_config_for_user, MyView, ToggleButton, quotes_collection , get_quote_from_db , post_quote, update_dayly_quote_config, my_perspective_client, My_Button
 
 ## set up the bot 
 TOKEN = os.environ['TOKEN']
@@ -61,10 +63,22 @@ async def add_quote(interaction : discord.Interaction , quote: str):
     await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ", ephemeral = True)
     #print("message is toxic ") 
 
-@bot.tree.command(name="dayly_quotes", description="Better mornings, **takes (hour:minutes)** Ex : '08:10' ")
-async def test_btn(interaction : discord.Interaction):
-  em = My_Button()
-  await interaction.response.send_message(content=f"Activate Dayly Quotes ?", view=em, ephemeral=True, delete_after=60)
+@bot.tree.command(name="dayly_quotes", description="Better mornings, takes (hour:minutes). Ex: '08:10'")
+async def test_btn(interaction: discord.Interaction, time_hour: str):
+    # Check that the time_hour string is in the correct format (HH:MM)
+    if not re.match(r"^\d{2}:\d{2}$", time_hour):
+        await interaction.response.send_message(
+            content="Invalid time format. Please enter a time in the format HH:MM.",
+            ephemeral=True,
+            delete_after=10,
+        )
+        return
 
+    # Check if the user has already activated dayly quotes
+    user_config = load_config_for_user(interaction.user.id)
+    active = user_config.get("dayly_quotes_config", {}).get(str(interaction.user.id), {}).get("dayly", 0)
+
+    view = MyView(when=time_hour, active=active)
+    await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour}?", view=view, ephemeral=True)
 
 bot.run(TOKEN)

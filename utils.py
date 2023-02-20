@@ -39,6 +39,14 @@ def get_quote():
   quote = response_json[0]['q'] + " -" + response_json[0]['a']
   return quote
 
+## Get quote from Mongo db
+def get_quote_from_db():
+    #get random q
+    random = quotes_collection.aggregate([{ "$sample": { "size": 1 } }])
+    for i in random:
+      quote = f"{i['quote']} -{i['author']}"
+    return quote
+
 
 def config_dayly_quotes(user_id, is_dayly_activate , hour, filename="config.json" ):
   dic = {

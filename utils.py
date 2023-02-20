@@ -1,10 +1,12 @@
 import os 
 import json 
 import requests
-from datetime import datetime
+import datetime
 from pymongo import MongoClient
 from googleapiclient import discovery
 import discord
+from discord.ui import Select, View
+import pytz
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -135,11 +137,19 @@ class My_Button(discord.ui.View):
         await print('should send message here ')
         await interaction.response.send_message(message, ephemeral=True)
 
-def load_config_for_user(user_id, file_path="config.json"):
+
+def load_config_for_user(user_id="all", file_path="config.json"):
     with open(file_path, "r") as file:
         data = json.load(file)
         dayly_config = data.get('dayly_quotes_config', {})
-        return dayly_config.get(str(user_id), {})
+
+        if user_id == "all":
+            # Return a dictionary of user IDs and configurations
+            return {user_id: json.loads(config) if isinstance(config, str) else config for user_id, config in dayly_config.items()}
+        else:
+            return dayly_config.get(str(user_id), {})
+
+
 
 class ToggleButton(discord.ui.Button):
     def __init__(self, active, **kwargs):
@@ -149,10 +159,13 @@ class ToggleButton(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
         self.active = not self.active
+
+        current_state = "Activated" if self.active else "Deactivated"
         label = "Deactivate" if self.active else "Activate"
         self.label = label
-        await interaction.response.edit_message(view=self.view)
+        await interaction.response.edit_message(content=f"Moring Quotes. {current_state} ", view=self.view)
         update_dayly_quote_config(interaction.user.id, int(self.active), when=self.view.when)
+
 
 class MyView(discord.ui.View):
     def __init__(self, when, active):
@@ -161,3 +174,23 @@ class MyView(discord.ui.View):
         self.add_item(ToggleButton(active))
 
 my_perspective_client = perspective_client(PERSPECTIVE_API)
+
+
+#### 
+class TimezoneSelect(View):
+    @discord.ui.select(
+      placeholder="select something ..",
+      options=[
+        discord.SelectOption(label="Option 1" , value="1"),
+        discord.SelectOption(label="Option 2" , value="2"),
+        discord.SelectOption(label="Option 3" , value="3")
+      ]
+    )
+
+    async def callback(self, select , interaction):
+        print(interaction)
+        selected_tz = pytz.timezone(interaction.values[0])
+        print('exec callback'+  interaction.message.components[0])
+        await interaction.response.send_message(f'The current time in {selected_tz.zone} is {datetime.datetime.now(selected_tz).strftime("%Y-%m-%d %H:%M:%S")}.')
+
+

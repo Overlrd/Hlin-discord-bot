@@ -8,13 +8,20 @@ import requests
 import json
 from discord import app_commands, Embed
 from pymongo import MongoClient
-from datetime import datetime
+import datetime
 import re
+##"
+# 
+# 
+import pytz
+from discord.ui import Select
 
+# 
+# 
 # e load env variables
 from dotenv import load_dotenv
 load_dotenv()
-from utils import load_config_for_user, MyView, ToggleButton, quotes_collection , get_quote_from_db , post_quote, update_dayly_quote_config, my_perspective_client, My_Button
+from utils import TimezoneSelect, load_config_for_user, MyView, ToggleButton, quotes_collection , get_quote_from_db , post_quote, update_dayly_quote_config, my_perspective_client, My_Button
 
 ## set up the bot 
 TOKEN = os.environ['TOKEN']
@@ -63,7 +70,7 @@ async def add_quote(interaction : discord.Interaction , quote: str):
     await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ", ephemeral = True)
     #print("message is toxic ") 
 
-@bot.tree.command(name="dayly_quotes", description="Better mornings, takes (hour:minutes). Ex: '08:10'")
+@bot.tree.command(name="dayly_quotes", description="Better mornings, takes (hour:minutes) GMT . Ex: '08:10'")
 async def test_btn(interaction: discord.Interaction, time_hour: str):
     # Check that the time_hour string is in the correct format (HH:MM)
     if not re.match(r"^\d{2}:\d{2}$", time_hour):
@@ -79,6 +86,29 @@ async def test_btn(interaction: discord.Interaction, time_hour: str):
     active = user_config.get("dayly_quotes_config", {}).get(str(interaction.user.id), {}).get("dayly", 0)
 
     view = MyView(when=time_hour, active=active)
-    await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour}?", view=view, ephemeral=True)
+    await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour} GMT ?", view=view, ephemeral=True)
+
+### Send Dayly message 
+@bot.tree.command(name="send_me")
+async def send_quote_to_user(interaction : discord.Interaction):
+   User_id = interaction.user.id
+   message = "hello, world"
+   user = await bot.fetch_user(User_id)
+   print(f"sending {message} to {user}")
+   await user.send(message)
+
+async def schedule_dayly_quotes():
+   while True:
+      now =  datetime.datetime.now().time()
+
+      # loop trough user config here
+      users_configs = load_config_for_user("all")
+      for user , config in users_configs.items():
+         if config['dayly'] == "1" :
+            if now == config['when']:
+               send_quote_to_user()
+
+
+
 
 bot.run(TOKEN)

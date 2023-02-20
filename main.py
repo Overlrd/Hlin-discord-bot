@@ -12,23 +12,18 @@ import datetime
 import re
 import asyncio
 
-##"
-# 
-# 
+## create an istance of quote cog
+ 
 import pytz
 from discord.ui import Select
 
-# 
-# 
-# e load env variables
 from dotenv import load_dotenv
 load_dotenv()
-from utils import TimezoneSelect, load_config_for_user, MyView, ToggleButton, quotes_collection , get_quote_from_db , post_quote, update_dayly_quote_config, my_perspective_client, My_Button
+from utils import get_quote_from_db, TimezoneSelect,post_quote, load_config_for_user, MyView, ToggleButton , update_dayly_quote_config, my_perspective_client, My_Button
 
 ## set up the bot 
 TOKEN = os.environ['TOKEN']
 bot = commands.Bot(command_prefix="/", intents = discord.Intents.all())
-
 
 @bot.event
 async def on_command_error(ctx, error):
@@ -66,24 +61,30 @@ async def on_ready():
     asyncio.create_task(start_scheduled_task())
 
     print(f'--------------------Logged--------------')
+
     try:
         synced = await bot.tree.sync()
         print(f" {len(synced)} commands synced " )
     except Exception as e :
-      print(e)
+        print(e)
+
+    try :
+       await bot.load_extension('cogs.quote_cogs')
+    except Exception as e :
+       print(e)
+
+
       
 
 ## main func 
 
       
 @bot.tree.command(name = "inspire", description="Get a quote")
-async def inspire(interaction : discord.Interaction):
-    #quote = get_quote()
-    quote = get_quote_from_db()
-    await interaction.response.send_message(quote, ephemeral = True )
-
-
-
+async def cog_inspire(interaction):
+   quote_cog = bot.get_cog('QuoteCog')
+   print('calling ispire from cog ')
+   await quote_cog.inspire(interaction)    
+ 
 @bot.tree.command(name = "add_quote", description="Add a quote to Hlin")
 async def add_quote(interaction : discord.Interaction , quote: str):
   toxicity = my_perspective_client.analyze_quote(quote)

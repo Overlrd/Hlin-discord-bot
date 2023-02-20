@@ -10,6 +10,8 @@ from discord import app_commands, Embed
 from pymongo import MongoClient
 import datetime
 import re
+import asyncio
+
 ##"
 # 
 # 
@@ -34,11 +36,36 @@ async def on_command_error(ctx, error):
       em = discord.Embed(title=f"Sorry :-( ", description=f"I Don't support this command.", color=ctx.author.color) 
       await ctx.send(embed=em, ephemeral = True, mention_author = True)
 
+#######################################################################################################
+### Send Dayly message 
+async def send_quote_to_user(User_id, ):
+   user = await bot.fetch_user(User_id)
+   message =  get_quote_from_db()
+   print(f"sending {message} to {user}")
+   await user.send(message)
+
+async def schedule_dayly_quotes(users_configs):
+    now =  datetime.datetime.now().strftime('%H:%M')
+    print(f"Now is {now}")
+    for user_id , config in users_configs.items():
+        print(f"user is {user_id}")
+        if config['dayly'] == "1" and now == config['when']:
+            print(f"{config['when'] == {now}} should send message" )
+            await send_quote_to_user(User_id=user_id)
+
+async def start_scheduled_task():
+    while True:
+        print("started schedule func")
+        users_configs = load_config_for_user("all")
+        await schedule_dayly_quotes(users_configs)
+        await asyncio.sleep(60)
+
 
 @bot.event 
 async def on_ready():
-    print(f'--------------------Logged--------------')
+    asyncio.create_task(start_scheduled_task())
 
+    print(f'--------------------Logged--------------')
     try:
         synced = await bot.tree.sync()
         print(f" {len(synced)} commands synced " )
@@ -63,11 +90,16 @@ async def add_quote(interaction : discord.Interaction , quote: str):
   print(f"{toxicity} for {quote}")
 
   if toxicity < 0.6:
-    post_quote(quote, str(interaction.user))
-    await interaction.response.send_message(f"{quote} by  {interaction.user.mention} ", ephemeral = True)
-
+    await post_quote(quote, str(interaction.user))
+    try :
+        await interaction.response.send_message(f"{quote} by  {interaction.user.mention}")
+    except discord.errors.HTTPException:
+       pass
   else:
-    await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ", ephemeral = True)
+    try :
+        await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ")
+    except  discord.errors.HTTPException:
+       pass
     #print("message is toxic ") 
 
 @bot.tree.command(name="dayly_quotes", description="Better mornings, takes (hour:minutes) GMT . Ex: '08:10'")
@@ -87,28 +119,6 @@ async def test_btn(interaction: discord.Interaction, time_hour: str):
 
     view = MyView(when=time_hour, active=active)
     await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour} GMT ?", view=view, ephemeral=True)
-
-### Send Dayly message 
-@bot.tree.command(name="send_me")
-async def send_quote_to_user(interaction : discord.Interaction):
-   User_id = interaction.user.id
-   message = "hello, world"
-   user = await bot.fetch_user(User_id)
-   print(f"sending {message} to {user}")
-   await user.send(message)
-
-async def schedule_dayly_quotes():
-   while True:
-      now =  datetime.datetime.now().time()
-
-      # loop trough user config here
-      users_configs = load_config_for_user("all")
-      for user , config in users_configs.items():
-         if config['dayly'] == "1" :
-            if now == config['when']:
-               send_quote_to_user()
-
-
 
 
 bot.run(TOKEN)

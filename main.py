@@ -22,14 +22,9 @@ load_dotenv()
 from utils import send_dayly_quote_to_user, schedule_dayly_quotes, start_scheduled_task, TimezoneSelect,post_quote, load_config_for_user, MyView, ToggleButton , update_dayly_quote_config, my_perspective_client, My_Button
 
 ## set up the bot 
-TOKEN = os.environ['TOKEN']
+TOKEN = os.environ['DISCORD_BOT_TOKEN']
 bot = commands.Bot(command_prefix="/", intents = discord.Intents.all())
 
-@bot.event
-async def on_command_error(ctx, error):
-  if isinstance(error, CommandNotFound):
-      em = discord.Embed(title=f"Sorry :-( ", description=f"I Don't support this command.", color=ctx.author.color) 
-      await ctx.send(embed=em, ephemeral = True, mention_author = True)
 
 @bot.event 
 async def on_ready():
@@ -47,6 +42,12 @@ async def on_ready():
        await bot.load_extension('cogs.quote_cogs')
     except Exception as e :
        print(f">>>> {e} \n")
+
+@bot.event
+async def on_command_error(ctx, error):
+  if isinstance(error, CommandNotFound):
+      em = discord.Embed(title=f"Sorry :-( ", description=f"I Don't support this command.", color=ctx.author.color) 
+      await ctx.send(embed=em, ephemeral = True, mention_author = True)
 
       
 @bot.tree.command(name = "inspire", description="Get a quote")

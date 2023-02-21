@@ -13,13 +13,9 @@ class QuoteCog(commands.Cog):
         print('>>>> QuoteCog Loaded \n')
 
         """ SETUP CONNECTION WITH MONGODB """
-        MONGO_CONN_LINK =  os.environ['CONN_LINK']
-        Client_Mongo = MongoClient(MONGO_CONN_LINK)
-        quotes_db = Client_Mongo.quotes
-        self.quotes_collection = quotes_db.quotes_collection
 
         """GOOGLE PERSCEPCTIVE """
-        PERSPECTIVE_API = os.environ['G_PER_TOKEN']
+        PERSPECTIVE_API = os.environ['GOOGLE_PERSPECTIVE_KEY']
         self.my_perspective_client = perspective_client(PERSPECTIVE_API)
 
         """BOT"""

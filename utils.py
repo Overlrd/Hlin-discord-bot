@@ -14,11 +14,11 @@ load_dotenv()
 
 """ VARIABLES """
 ## Mongo db connection link
-MONGO_CONN_LINK =  os.environ['CONN_LINK']
+MONGO_CONN_LINK =  os.environ['MONGODB_CONN_LINK']
 # API URL
 API_URL = 'https://zenquotes.io/api/random'
 # Google perspective API KEY
-PERSPECTIVE_API = os.environ['G_PER_TOKEN']
+PERSPECTIVE_API = os.environ['GOOGLE_PERSPECTIVE_KEY']
 
 
 """ SETUP DATABASE"""

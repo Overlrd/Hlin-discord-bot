@@ -5,56 +5,71 @@ import requests
 import datetime
 import json
 import os 
-
+import re 
+from utils import perspective_client , MyView, load_config_for_user , get_quote_from_db , get_quote, post_quote
 
 class QuoteCog(commands.Cog):
     def __init__(self, bot):
-        print('cog loaded here ')
+        print('>>>> QuoteCog Loaded \n')
+
         """ SETUP CONNECTION WITH MONGODB """
         MONGO_CONN_LINK =  os.environ['CONN_LINK']
         Client_Mongo = MongoClient(MONGO_CONN_LINK)
         quotes_db = Client_Mongo.quotes
         self.quotes_collection = quotes_db.quotes_collection
-        """GOOGLE PERSCEPCTIVE API KEY AND ZENQUOTES ROUTE"""
-        self.ZENQUOTES_API_URL = 'https://zenquotes.io/api/random'
+
+        """GOOGLE PERSCEPCTIVE """
         PERSPECTIVE_API = os.environ['G_PER_TOKEN']
+        self.my_perspective_client = perspective_client(PERSPECTIVE_API)
+
         """BOT"""
         self.bot = bot 
-
-    """LOAD RANDOM QUOTE FROM ZENQUOTES API"""
-    def get_quote(self):
-        #make a get request to the zen quotes api
-        response = requests.get(self.ZENQUOTES_API_URL)
-        #converting the response to json
-        response_json = json.loads(response.text)
-        #get the message with the key 'q' and the author with  the key 'a'
-        quote = response_json[0]['q'] + " -" + response_json[0]['a']
-        return quote
-    
-    """LOAD RANDOM QUOTE FROM MONDODB"""
-    def get_quote_from_db(self):
-        #get random q
-        random = self.quotes_collection.aggregate([{ "$sample": { "size": 1 } }])
-        for i in random:
-            quote = f"{i['quote']} -{i['author']}"
-        return quote
-    
-    """POST A QUOTE TO MONGODB"""
-    def post_quote(self, quote_text, quote_author):
-        now = datetime.datetime.now().strftime("%y:%m:%d:%H:%M:%S")
-        #quote_author = quote_author.split("@", 1)[1]
-        doc = {"author":quote_author, "quote":quote_text, "date" : now}
-        try :
-            self.quotes_collection.insert_one(doc)
-            print("quote sended ")
-        except Exception as e:
-            print(e)
 
     @commands.command(name = "inspire", description="Get a quote")
     async def inspire(self, ctx):
         #quote = get_quote()
-        quote = self.get_quote_from_db()
-        await ctx.response.send_message(quote)
+        quote = get_quote_from_db()
+        try :
+            await ctx.response.send_message(quote)
+            print(f">>>> New quote sended to {ctx.user} \n")
+        except discord.errors.HTTPException :
+            pass
+
+
+    @commands.command(name = "add_quote", description="Add a quote to Hlin")
+    async def add_quote(self , interaction , quote: str):
+        toxicity = self.my_perspective_client.analyze_quote(quote)
+        print(f">>>> {quote} => {toxicity} \n")
+
+        if toxicity < 0.6:
+            await post_quote(quote, str(interaction.user))
+            try :
+                await interaction.response.send_message(f"{quote} by  {interaction.user.mention}")
+            except discord.errors.HTTPException:
+                pass
+        else:
+            try :
+                await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ", ephemeral=True)
+            except  discord.errors.HTTPException:
+                pass
+
+    @commands.command(name="dayly_quotes", description="Change???")
+    async def setup_dayly_quotes(self , interaction , time_hour: str):
+        # Check that the time_hour string is in the correct format (HH:MM)
+        if not re.match(r"^\d{2}:\d{2}$", time_hour):
+            await interaction.response.send_message(
+                content="Invalid time format. Please enter a time in the format HH:MM.",
+                ephemeral=True,
+                delete_after=10,
+            )
+            return
+
+        # Check if the user has already activated dayly quotes
+        user_config = load_config_for_user(interaction.user.id)
+        active = user_config.get("dayly_quotes_config", {}).get(str(interaction.user.id), {}).get("dayly", 0)
+
+        view = MyView(when=time_hour, active=active)
+        await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour} GMT ?", view=view, ephemeral=True)
 
 
 async def setup(bot):

@@ -7,6 +7,7 @@ from googleapiclient import discovery
 import discord
 from discord.ui import Select, View
 import pytz
+import asyncio
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -63,13 +64,13 @@ def config_dayly_quotes(user_id, is_dayly_activate , hour, filename="config.json
     file.seek(0)
     json.dump(file_data, file, indent=4)
 
-def post_quote(quote_text, quote_author):
-  now = datetime.now().strftime("%y:%m:%d:%H:%M:%S")
+async def post_quote(quote_text, quote_author):
+  now = datetime.datetime.now().strftime("%y:%m:%d:%H:%M:%S")
   #quote_author = quote_author.split("@", 1)[1]
   doc = {"author":quote_author, "quote":quote_text, "date" : now}
   try :
     quotes_collection.insert_one(doc)
-    print("quote sended ")
+    print(">>>> new quote sended to db \n")
   except Exception as e:
     print(e)
 
@@ -93,6 +94,30 @@ def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config
     return message
 
 
+async def send_dayly_quote_to_user(User_id, bot ):
+   user = await bot.fetch_user(User_id)
+   message =  get_quote_from_db()
+   print(f">>>> sending {message} to {user} \n")
+   await user.send(message)
+
+async def schedule_dayly_quotes(users_configs,bot):
+    now =  datetime.datetime.now().strftime('%H:%M')
+    print(f">>>> Task Restarted at : {now} \n")
+    for user_id , config in users_configs.items():
+        print(f">>>> user is {user_id} \n")
+        if config['dayly'] == "1" and now == config['when']:
+            print(f">>>> {config['when']} => should send message" )
+            await send_dayly_quote_to_user(User_id=user_id, bot=bot)
+
+async def start_scheduled_task(bot):
+    while True:
+        print(">>>> started start_scheduled_tesk function \n")
+        users_configs = load_config_for_user("all")
+        await schedule_dayly_quotes(users_configs,bot=bot)
+        await asyncio.sleep(60)
+
+
+
 """ UTILITARY CLASSES """
 class perspective_client():
   def __init__(self, key):
@@ -114,6 +139,8 @@ class perspective_client():
     response_to_dict = json.loads(response)
     toxicity = response_to_dict['attributeScores']['TOXICITY']['summaryScore']['value']
     return toxicity
+  
+my_perspective_client = perspective_client(PERSPECTIVE_API)
 
 
 class My_Button(discord.ui.View):
@@ -172,9 +199,6 @@ class MyView(discord.ui.View):
         self.when = when
         super().__init__(timeout=None)
         self.add_item(ToggleButton(active))
-
-my_perspective_client = perspective_client(PERSPECTIVE_API)
-
 
 #### 
 class TimezoneSelect(View):

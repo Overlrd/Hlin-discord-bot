@@ -1,31 +1,35 @@
+"""DISCORD RELATED PACKAGES"""
 import discord 
 from discord.ext import commands , tasks
 from discord.ext.commands import CommandNotFound
 import interactions
+from discord import app_commands, Embed
+
+""" MONGODB / PERSPECTIVE RELATED PACKAGES"""
+from pymongo import MongoClient
 from googleapiclient import discovery
+
+"""  """
 import os 
 import requests
 import json
-from discord import app_commands, Embed
-from pymongo import MongoClient
 import datetime
 import re
 import asyncio
 
-## create an istance of quote cog
- 
-import pytz
-from discord.ui import Select
-
 from dotenv import load_dotenv
 load_dotenv()
-from utils import send_dayly_quote_to_user, schedule_dayly_quotes, start_scheduled_task, TimezoneSelect,post_quote, load_config_for_user, MyView, ToggleButton , update_dayly_quote_config, my_perspective_client, My_Button
 
-## set up the bot 
+
+from utils import send_dayly_quote_to_user, schedule_dayly_quotes, start_scheduled_task,post_quote, load_config_for_user, MyView, ToggleButton , update_dayly_quote_config, my_perspective_client
+from keep_alive import keep_alive
+from variables import INTENTS
+
+"""SETUP THE BOT"""
 TOKEN = os.environ['DISCORD_BOT_TOKEN']
-bot = commands.Bot(command_prefix="/", intents = discord.Intents.all())
+bot = commands.Bot(command_prefix="/", intents = INTENTS)
 
-
+"""BOT EVENTS"""
 @bot.event 
 async def on_ready():
     asyncio.create_task(start_scheduled_task(bot=bot))
@@ -49,7 +53,8 @@ async def on_command_error(ctx, error):
       em = discord.Embed(title=f"Sorry :-( ", description=f"I Don't support this command.", color=ctx.author.color) 
       await ctx.send(embed=em, ephemeral = True, mention_author = True)
 
-      
+
+""" BOT COMMANDS """
 @bot.tree.command(name = "inspire", description="Get a quote")
 async def cog_inspire(interaction):
    quote_cog = bot.get_cog('QuoteCog')
@@ -68,4 +73,10 @@ async def setup_dayly_quotes(interaction: discord.Interaction, time_hour: str):
    print('>>>> QuoteCog.setup_dayly_quotes \n')
    await quote_cog.setup_dayly_quotes(interaction, time_hour)   
 
-bot.run(TOKEN)
+def main():
+   #keep it alive for replit 
+   #keep_alive()
+   bot.run(TOKEN)
+
+if __name__ == "__main__":
+   main()

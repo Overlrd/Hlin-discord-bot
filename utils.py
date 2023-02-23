@@ -5,20 +5,14 @@ import datetime
 from pymongo import MongoClient
 from googleapiclient import discovery
 import discord
-from discord.ui import Select, View
-import pytz
 import asyncio
 from dotenv import load_dotenv
 load_dotenv()
 
 
 """ VARIABLES """
-## Mongo db connection link
-MONGO_CONN_LINK =  os.environ['MONGODB_CONN_LINK']
-# API URL
-API_URL = 'https://zenquotes.io/api/random'
-# Google perspective API KEY
-PERSPECTIVE_API = os.environ['GOOGLE_PERSPECTIVE_KEY']
+from variables import MONGO_CONN_LINK, API_URL , PERSPECTIVE_API
+
 
 
 """ SETUP DATABASE"""
@@ -27,7 +21,7 @@ quotes_db = Client_Mongo.quotes
 quotes_collection = quotes_db.quotes_collection
 
 
-""" UTILITARY FUNCTIONS """
+""" UTILITY FUNCTIONS """
 ## Get quote from API
 
 def get_quote():
@@ -45,24 +39,9 @@ def get_quote_from_db():
     #get random q
     random = quotes_collection.aggregate([{ "$sample": { "size": 1 } }])
     for i in random:
-      quote = f"{i['quote']} -{i['author']}"
+      quote = f"{i['quote']} - {i['author']}"
     return quote
 
-
-def config_dayly_quotes(user_id, is_dayly_activate , hour, filename="config.json" ):
-  dic = {
-    "user": user_id,
-    "dayly":is_dayly_activate,
-    "when":hour}
-
-  with open(filename, "r+") as file :
-    file_data = json.load(file)
-    print(file_data)
-    for i in file_data['dayly_quotes_config']:
-      print(i['user'])
-    file_data['dayly_quotes_config'].append(dic)
-    file.seek(0)
-    json.dump(file_data, file, indent=4)
 
 async def post_quote(quote_text, quote_author):
   now = datetime.datetime.now().strftime("%y:%m:%d:%H:%M:%S")
@@ -73,6 +52,19 @@ async def post_quote(quote_text, quote_author):
     print(">>>> new quote sended to db \n")
   except Exception as e:
     print(e)
+
+def load_config_for_user(user_id="all", file_path="config.json"):
+    with open(file_path, "r") as file:
+        data = json.load(file)
+        dayly_config = data.get('dayly_quotes_config', {})
+
+        if user_id == "all":
+            # Return a dictionary of user IDs and configurations
+            return {user_id: json.loads(config) if isinstance(config, str) else config for user_id, config in dayly_config.items()}
+        else:
+            return dayly_config.get(str(user_id), {})
+
+
 
 ## update or create config for dayly quote
 def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config.json"):
@@ -97,28 +89,28 @@ def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config
 async def send_dayly_quote_to_user(User_id, bot ):
    user = await bot.fetch_user(User_id)
    message =  get_quote_from_db()
-   print(f">>>> sending {message} to {user} \n")
+   print(f">>>> sending new message to {user} \n")
    await user.send(message)
 
 async def schedule_dayly_quotes(users_configs,bot):
     now =  datetime.datetime.now().strftime('%H:%M')
     print(f">>>> Task Restarted at : {now} \n")
+    print(f">>>> Reading {len(users_configs)} user's config ...\n")
     for user_id , config in users_configs.items():
-        print(f">>>> user is {user_id} \n")
         if config['dayly'] == "1" and now == config['when']:
             print(f">>>> {config['when']} => should send message" )
             await send_dayly_quote_to_user(User_id=user_id, bot=bot)
 
 async def start_scheduled_task(bot):
     while True:
-        print(">>>> started start_scheduled_tesk function \n")
+        print(">>>> started start_scheduled_task function \n")
         users_configs = load_config_for_user("all")
         await schedule_dayly_quotes(users_configs,bot=bot)
         await asyncio.sleep(60)
 
 
 
-""" UTILITARY CLASSES """
+""" UTILITY CLASSES """
 class perspective_client():
   def __init__(self, key):
     self.pers_client = discovery.build(
@@ -143,41 +135,6 @@ class perspective_client():
 my_perspective_client = perspective_client(PERSPECTIVE_API)
 
 
-class My_Button(discord.ui.View):
-    def __init__(self, when):
-        self.when = when
-        super().__init__()
-        
-    @discord.ui.button(label="Activate", style= discord.ButtonStyle.primary)
-    async def activate(self, interaction: discord.Interaction, button: discord.ui.Button):
-        print('should update config here ')
-
-        message = await update_dayly_quote_config(interaction.user.id, 1, when=self.when)
-
-        await print("should send message here ")
-        await interaction.response.send_message(message, ephemeral=True)
-
-    @discord.ui.button(label="Deactivate", style= discord.ButtonStyle.danger)
-    async def deactivate(self, interaction: discord.Interaction, button: discord.ui.Button):
-        print('should update config here ')
-        message = await update_dayly_quote_config(interaction.user.id, 0)
-        await print('should send message here ')
-        await interaction.response.send_message(message, ephemeral=True)
-
-
-def load_config_for_user(user_id="all", file_path="config.json"):
-    with open(file_path, "r") as file:
-        data = json.load(file)
-        dayly_config = data.get('dayly_quotes_config', {})
-
-        if user_id == "all":
-            # Return a dictionary of user IDs and configurations
-            return {user_id: json.loads(config) if isinstance(config, str) else config for user_id, config in dayly_config.items()}
-        else:
-            return dayly_config.get(str(user_id), {})
-
-
-
 class ToggleButton(discord.ui.Button):
     def __init__(self, active, **kwargs):
         self.active = active
@@ -199,22 +156,3 @@ class MyView(discord.ui.View):
         self.when = when
         super().__init__(timeout=None)
         self.add_item(ToggleButton(active))
-
-#### 
-class TimezoneSelect(View):
-    @discord.ui.select(
-      placeholder="select something ..",
-      options=[
-        discord.SelectOption(label="Option 1" , value="1"),
-        discord.SelectOption(label="Option 2" , value="2"),
-        discord.SelectOption(label="Option 3" , value="3")
-      ]
-    )
-
-    async def callback(self, select , interaction):
-        print(interaction)
-        selected_tz = pytz.timezone(interaction.values[0])
-        print('exec callback'+  interaction.message.components[0])
-        await interaction.response.send_message(f'The current time in {selected_tz.zone} is {datetime.datetime.now(selected_tz).strftime("%Y-%m-%d %H:%M:%S")}.')
-
-

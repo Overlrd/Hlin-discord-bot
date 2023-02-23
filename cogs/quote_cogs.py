@@ -7,6 +7,7 @@ import json
 import os 
 import re 
 from utils import perspective_client , MyView, load_config_for_user , get_quote_from_db , get_quote, post_quote
+from variables import TOLERATED_TOXICITY
 
 class QuoteCog(commands.Cog):
     def __init__(self, bot):
@@ -37,7 +38,7 @@ class QuoteCog(commands.Cog):
         toxicity = self.my_perspective_client.analyze_quote(quote)
         print(f">>>> {quote} => {toxicity} \n")
 
-        if toxicity < 0.6:
+        if toxicity < TOLERATED_TOXICITY:
             await post_quote(quote, str(interaction.user))
             try :
                 await interaction.response.send_message(f"{quote} by  {interaction.user.mention}")
@@ -49,7 +50,7 @@ class QuoteCog(commands.Cog):
             except  discord.errors.HTTPException:
                 pass
 
-    @commands.command(name="dayly_quotes", description="Change???")
+    @commands.command(name="dayly_quotes", description="")
     async def setup_dayly_quotes(self , interaction , time_hour: str):
         # Check that the time_hour string is in the correct format (HH:MM)
         if not re.match(r"^\d{2}:\d{2}$", time_hour):

@@ -11,12 +11,8 @@ load_dotenv()
 
 
 """ VARIABLES """
-## Mongo db connection link
-MONGO_CONN_LINK =  os.environ['MONGODB_CONN_LINK']
-# API URL
-API_URL = 'https://zenquotes.io/api/random'
-# Google perspective API KEY
-PERSPECTIVE_API = os.environ['GOOGLE_PERSPECTIVE_KEY']
+from variables import MONGO_CONN_LINK, API_URL , PERSPECTIVE_API
+
 
 
 """ SETUP DATABASE"""
@@ -93,21 +89,21 @@ def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config
 async def send_dayly_quote_to_user(User_id, bot ):
    user = await bot.fetch_user(User_id)
    message =  get_quote_from_db()
-   print(f">>>> sending {message} to {user} \n")
+   print(f">>>> sending new message to {user} \n")
    await user.send(message)
 
 async def schedule_dayly_quotes(users_configs,bot):
     now =  datetime.datetime.now().strftime('%H:%M')
     print(f">>>> Task Restarted at : {now} \n")
+    print(f">>>> Reading {len(users_configs)} user's config ...\n")
     for user_id , config in users_configs.items():
-        print(f">>>> user is {user_id} \n")
         if config['dayly'] == "1" and now == config['when']:
             print(f">>>> {config['when']} => should send message" )
             await send_dayly_quote_to_user(User_id=user_id, bot=bot)
 
 async def start_scheduled_task(bot):
     while True:
-        print(">>>> started start_scheduled_tesk function \n")
+        print(">>>> started start_scheduled_task function \n")
         users_configs = load_config_for_user("all")
         await schedule_dayly_quotes(users_configs,bot=bot)
         await asyncio.sleep(60)

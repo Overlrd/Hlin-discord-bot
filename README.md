@@ -1,12 +1,9 @@
 # Hlin-discord-bot
+
 Share Comfort on Discord 
 
+Still in development ...
 
-
-still in development ...
-
-
-
-
-
-<img alt='loading' src='https://media.giphy.com/media/3y0oCOkdKKRi0/giphy.gif' />
+<div align="center">
+  <img width=500px alt='loading' src='https://i.imgur.com/kGSl5r7.png'/>
+</div>

@@ -6,3 +6,5 @@ todo.txt
 test.py
 config.json
 todo.txt
+test
+*.log

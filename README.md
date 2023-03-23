@@ -6,9 +6,9 @@ A discord bot to generate inspiring and comforting quotes , part of the [Hlin pr
   <img width=500px alt='loading' src='https://i.imgur.com/kGSl5r7.png'/>
 </div>
 
-## Setup
+# Setup
 
-### Prerequisites
+## Prerequisites
 
 To run the bot, you will need the following:
 
@@ -24,7 +24,7 @@ To run the bot, you will need the following:
  - [Python MongoDB Tutorial using PyMongo](https://www.youtube.com/watch?v=rE_bJl2GAY8)
  - [How to get your discord bot token](https://www.youtube.com/watch?v=aI4OmIbkJH8)
 
- ### Running the Bot
+ ## Running the Bot
 To run the bot:
 
  - Create a Python virtual environment and install the dependencies listed in requirements.txt

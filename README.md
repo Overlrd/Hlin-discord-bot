@@ -1,8 +1,7 @@
 # Hlin-discord-bot
 
-Share Comfort on Discord 
-
-
+A discord bot to generate inspiring and comforting quotes , part of the [Hlin project](https://overlrd.github.io/hlin/)
+ 
 <div align="center">
   <img width=500px alt='loading' src='https://i.imgur.com/kGSl5r7.png'/>
 </div>

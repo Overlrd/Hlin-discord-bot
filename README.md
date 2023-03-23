@@ -1,7 +1,14 @@
-# Hlin-discord-bot
+# Hlin-discord-bot [<img height="50" align="right" src="https://user-images.githubusercontent.com/90383672/227210489-8d09a2f7-2eeb-460d-8c02-aef93fa5a4a3.png">](https://discord.com/api/oauth2/authorize?client_id=1050472519217463386&permissions=2048&scope=bot)
 
-A discord bot to generate inspiring and comforting quotes , part of the [Hlin project](https://overlrd.github.io/hlin/)
- 
+A discord bot to generate inspiring and comforting quotes , part of the [Hlin project](https://overlrd.github.io/hlin/) 
+
+
+
+
+
+
+<br>
+
 <div align="center">
   <img width=500px alt='loading' src='https://i.imgur.com/kGSl5r7.png'/>
 </div>

@@ -16,12 +16,50 @@ To run the bot, you will need the following:
  - A bot token from the [discord developer API](https://discord.com/developers/docs/topics/oauth2)
  - [Python 3.10](https://www.python.org/downloads/release/python-3100/) installed on your system
  - A [MongoDB cluster](https://cloud.mongodb.com/v2#/clusters) and/or [MongoDB Shell]() for testing
- - A connection string for your cluster in the format mongodb+srv://<username>:<password>@<cluster-name>mongodb.net/?retryWrites=true&w=majority
- - A Google Perspective API key
+ - A connection string for your cluster in the format :
+   -  "mongodb+srv:// ```username``` : ```password``` @ ```cluster-name``` mongodb.net/?retryWrites=true&w=majority"
+ 
+ - A [Google Perspective API key](https://developers.perspectiveapi.com/s/docs-get-started?language=en_US)
   
 **Helpfull Ressources**
  - [Python MongoDB Tutorial using PyMongo](https://www.youtube.com/watch?v=rE_bJl2GAY8)
  - [How to get your discord bot token](https://www.youtube.com/watch?v=aI4OmIbkJH8)
+
+ ### Running the Bot
+To run the bot:
+
+ - Create a Python virtual environment and install the dependencies listed in requirements.txt
+ ```shell
+  $ python3 -m venv .virtual-env
+  $ source .virtual-env/bin/activate
+  $ pip install -r requirements.txt
+  ```
+
+ - Run the ```setup.py``` file to automaticaly create and write ```config.json``` and ```.env``` files
+ ```shell
+  $ python3 setup.py
+ 
+ ```
+ - You will need to provide your ```Discord Bot token``` , ```Mongodb Connection Link``` and ```Google Perspective API Key``` 
+
+  
+ - Run the ```feed_database.py``` file to get quotes from the [zenquotes](https://zenquotes.io/) API (make sure to read the [docs](https://docs.zenquotes.io/zenquotes-documentation/)) or any other API (which may require further configuration).
+ ```shell
+ $ python3 feed_database.py
+ 
+ ```
+ 
+ - And start the Bot 
+ ```shell
+ $ python3 main.py
+ 
+ ```
+
+### Hosting with Replit (optional)
+If you plan to host the bot with replit.com, note that the Replit servers shut down if 30 minutes pass without them being pinged. To work around this, you can start a Flask server with the ```keep_alive.py``` file and use a website like [Uptime Robot](https://uptimerobot.com/) that will ping your server periodically.
+  
+  
+
 
 ### About the Database
 By default, a database called ```quotes``` will be created, and the quotes will be stored in a collection called ```quotes_collection```.
@@ -46,26 +84,8 @@ When feeding a quote to the database, the ```author, ```quote```, and ```date```
 doc = { "author": quote_author, "quote": quote_text, "date": now }
 ```
   
-### Running the Bot
-To run the bot:
 
- - Create a Python virtual environment and install the dependencies listed in requirements.txt
-
- - Create a .env file and store your Bot Token, MongoDB connection link, and Google Perspective API key in the following format:
-
-```python
-DISCORD_BOT_TOKEN="some token"
-MONGODB_CONN_LINK="some link"
-GOOGLE_PERSPECTIVE_KEY="some key"
-```
-  
- - You can use the feed_database.py file to get quotes from the [zenquotes](https://zenquotes.io/) API (make sure to read the [docs](https://docs.zenquotes.io/zenquotes-documentation/)) or any other API (which may require further configuration).
-
-### Hosting with Replit (optional)
-If you plan to host the bot with replit.com, note that the Replit servers shut down if 30 minutes pass without them being pinged. To work around this, you can start a Flask server with the ```keep_alive.py``` file and use a website like [Uptime Robot](https://uptimerobot.com/) that will ping your server periodically.
-  
-  
-### Bot Structure
+## Bot Structure
 
 The bot has three commands stored in `cogs/quote_cogs.py`:
 

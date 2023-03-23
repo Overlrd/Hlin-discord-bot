@@ -6,12 +6,13 @@ from pymongo import MongoClient
 from googleapiclient import discovery
 import discord
 import asyncio
+import logging
 from dotenv import load_dotenv
 load_dotenv()
 
 
-""" VARIABLES """
-from variables import MONGO_CONN_LINK, API_URL , PERSPECTIVE_API
+""" API KEYS """
+from settings import MONGO_CONN_LINK, API_URL , PERSPECTIVE_API
 
 
 
@@ -25,6 +26,7 @@ quotes_collection = quotes_db.quotes_collection
 ## Get quote from API
 
 def get_quote():
+  logging.info("utils-get_quote - getting quote from zenquotes.io")
   #make a get request to the zen quotes api
   response = requests.get(API_URL)
   #converting the response to json
@@ -36,6 +38,8 @@ def get_quote():
 
 ## Get quote from Mongo db
 def get_quote_from_db():
+    logging.info("QuoteCog.get_quote_from_db - retrieving a random quote from mongo db ")
+
     #get random q
     random = quotes_collection.aggregate([{ "$sample": { "size": 1 } }])
     for i in random:
@@ -44,30 +48,39 @@ def get_quote_from_db():
 
 
 async def post_quote(quote_text, quote_author):
+  logging.info("utils-post_quote - add anew quote to mongodb")
   now = datetime.datetime.now().strftime("%y:%m:%d:%H:%M:%S")
   #quote_author = quote_author.split("@", 1)[1]
   doc = {"author":quote_author, "quote":quote_text, "date" : now}
   try :
     quotes_collection.insert_one(doc)
-    print(">>>> new quote sended to db \n")
+    logging.info("new quote added to db")
   except Exception as e:
-    print(e)
+    logging.error(e)
 
 def load_config_for_user(user_id="all", file_path="config.json"):
-    with open(file_path, "r") as file:
-        data = json.load(file)
-        dayly_config = data.get('dayly_quotes_config', {})
+    logging.info("utils-load_config_for_user - loading user config from file")
 
-        if user_id == "all":
-            # Return a dictionary of user IDs and configurations
-            return {user_id: json.loads(config) if isinstance(config, str) else config for user_id, config in dayly_config.items()}
-        else:
-            return dayly_config.get(str(user_id), {})
+    try :
+
+        with open(file_path, "r") as file:
+            data = json.load(file)
+            dayly_config = data.get('dayly_quotes_config', {})
+
+            if user_id == "all":
+                # Return a dictionary of user IDs and configurations
+                return {user_id: json.loads(config) if isinstance(config, str) else config for user_id, config in dayly_config.items()}
+            else:
+                return dayly_config.get(str(user_id), {})
+        
+    except Exception as e:
+       logging.error(f"{e}")
 
 
 
 ## update or create config for dayly quote
 def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config.json"):
+    logging.info("utils-update_dayly_quote_config - update dayly quote in users config file")
     doc = {str(user_id): {"dayly": str(set_dayly), "when": str(when)}}
 
     with open(file_path, "r") as file:
@@ -89,21 +102,21 @@ def update_dayly_quote_config(user_id, set_dayly, when="none", file_path="config
 async def send_dayly_quote_to_user(User_id, bot ):
    user = await bot.fetch_user(User_id)
    message =  get_quote_from_db()
-   print(f">>>> sending new message to {user} \n")
+   logging.info(f"sending new message to {user}")
    await user.send(message)
 
 async def schedule_dayly_quotes(users_configs,bot):
     now =  datetime.datetime.now().strftime('%H:%M')
-    print(f">>>> Task Restarted at : {now} \n")
-    print(f">>>> Reading {len(users_configs)} user's config ...\n")
+    logging.info(f"Task Restarted at : {now}")
+    logging.info(f"Reading {len(users_configs)} user's config")
     for user_id , config in users_configs.items():
         if config['dayly'] == "1" and now == config['when']:
-            print(f">>>> {config['when']} => should send message" )
+            logging.info(f"{config['when']} => should send message")
             await send_dayly_quote_to_user(User_id=user_id, bot=bot)
 
 async def start_scheduled_task(bot):
     while True:
-        print(">>>> started start_scheduled_task function \n")
+        logging.info(f"started start_scheduled_task function")
         users_configs = load_config_for_user("all")
         await schedule_dayly_quotes(users_configs,bot=bot)
         await asyncio.sleep(60)
@@ -113,6 +126,7 @@ async def start_scheduled_task(bot):
 """ UTILITY CLASSES """
 class perspective_client():
   def __init__(self, key):
+    logging.info("setting up GOOGLE PERSPECTIVE API")
     self.pers_client = discovery.build(
           "commentanalyzer",
           "v1alpha1",
@@ -121,6 +135,7 @@ class perspective_client():
           static_discovery=False,
         )
   def analyze_quote(self, text_to_analyze):
+    logging.info(f"utils-perspective_cleint - analizing new quote :'{text_to_analyze}'")
     analyze_request = {
       'comment': { 'text':  text_to_analyze},
       'requestedAttributes': {'TOXICITY': {}}

@@ -71,6 +71,11 @@ async def setup_dayly_quotes(interaction: discord.Interaction, time_hour: str):
    quote_cog = bot.get_cog('QuoteCog')
    await quote_cog.setup_dayly_quotes(interaction, time_hour)   
 
+@bot.tree.command(name="feelings", description="Happy ,Angry, Sad or Anxious ? Here's a nice article to help with your feelings")
+async def feelings(interaction : discord.Interaction, feeling: str):
+    quote_cog = bot.get_cog('QuoteCog')
+    await quote_cog.feelings(interaction , feeling)
+
 def main():
    #keep it alive for replit 
    #keep_alive()

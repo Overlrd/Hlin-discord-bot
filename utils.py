@@ -6,13 +6,14 @@ from pymongo import MongoClient
 from googleapiclient import discovery
 import discord
 import asyncio
+import random
 import logging
 from dotenv import load_dotenv
 load_dotenv()
 
 
 """ API KEYS """
-from settings import MONGO_CONN_LINK, API_URL , PERSPECTIVE_API
+from settings import MONGO_CONN_LINK, API_URL , PERSPECTIVE_API, CUSTOM_SEARCH_API , SEARCH_ENGINE_ID
 
 
 
@@ -121,6 +122,27 @@ async def start_scheduled_task(bot):
         await schedule_dayly_quotes(users_configs,bot=bot)
         await asyncio.sleep(60)
 
+
+## get articles from wondermind
+
+def search_feeling(q, cx, key, num=10, start=1, alt='json'):
+    search_params = {
+        'q': q,
+        'cx': cx,
+        'key': key,
+        'num': num,
+        'start': start,
+        'alt': alt,
+        'linkSite': 'https://www.wondermind.com/article/'
+    }
+    service = discovery.build("customsearch", "v1", developerKey=search_params['key'])
+
+    res = service.cse().list(q=search_params['q'], cx=search_params['cx'],
+                             num=search_params['num'], start=search_params['start'],
+                             alt=search_params['alt']).execute()
+
+    item = random.choice(res['items'])
+    return item
 
 
 """ UTILITY CLASSES """

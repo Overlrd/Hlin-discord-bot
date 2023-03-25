@@ -7,8 +7,8 @@ import json
 import os 
 import re 
 import logging
-from utils import perspective_client , MyView, load_config_for_user , get_quote_from_db , get_quote, post_quote
-from settings import TOLERATED_TOXICITY
+from utils import perspective_client , MyView, load_config_for_user , get_quote_from_db , get_quote, post_quote, search_feeling
+from settings import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
 
 class QuoteCog(commands.Cog):
     def __init__(self, bot):
@@ -76,6 +76,12 @@ class QuoteCog(commands.Cog):
         logging.info("QuoteCog.dayly_quotes - updating view ")
         view = MyView(when=time_hour, active=active)
         await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour} GMT ?", view=view, ephemeral=True)
+
+    @commands.command(name="feeling")
+    async def feelings(self, interaction , feeling : str):
+        logging.info("called quotecog.feelings")
+        item = search_feeling(q=feeling,key=CUSTOM_SEARCH_API, cx=SEARCH_ENGINE_ID)
+        await interaction.response.send_message(content=f"{item['link']}", ephemeral=True)
 
 
 async def setup(bot):

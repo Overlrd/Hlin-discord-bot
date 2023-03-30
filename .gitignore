@@ -8,3 +8,5 @@ config.json
 todo.txt
 test
 *.log
+*_old.py
+.idea/

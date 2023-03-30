@@ -1,9 +1,13 @@
 import os
 import json 
 import logging
+from dotenv import load_dotenv
 
 from colorama import init, Fore, Style
+
 init()
+load_dotenv()
+
 message = "--------------SETUP - MAKE SURE TO CHECK THE README-------------------"
 print(f"{Fore.GREEN}{Style.BRIGHT}{message}{Style.RESET_ALL}")
 
@@ -37,7 +41,3 @@ try :
 except Exception as e :
     print(f"{Fore.RED} {e} {Style.RESET_ALL}")
 
-
-# Load the variables from the .env file using the dotenv package
-from dotenv import load_dotenv
-load_dotenv()

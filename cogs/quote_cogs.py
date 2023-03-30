@@ -10,7 +10,7 @@ from pymongo import MongoClient
 import requests
 
 from settings import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
-from utils.quotes_action import get_quote , get_quote_from_db , post_quote
+from utils.quote_actions import get_quote , get_quote_from_db , post_quote
 from utils.google_perspective import perspective_client
 from utils.custom_discord_views import ToggleButton , MyView
 from utils.config_actions import load_config_for_user 

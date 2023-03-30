@@ -4,7 +4,7 @@ import datetime
 
 import discord
 
-from utils.quotes_action import get_quote_from_db
+from utils.quote_actions import get_quote_from_db
 from utils.config_actions import load_config_for_user
 
 async def send_dayly_quote_to_user(User_id, bot ):

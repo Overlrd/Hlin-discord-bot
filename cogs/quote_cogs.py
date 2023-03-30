@@ -1,25 +1,27 @@
-import discord
-from discord.ext import commands
-from pymongo import MongoClient
-import requests
 import datetime
 import json
 import os 
 import re 
 import logging
-from utils import perspective_client , MyView, load_config_for_user , get_quote_from_db , get_quote, post_quote, search_feeling
+
+import discord
+from discord.ext import commands
+from pymongo import MongoClient
+import requests
+
 from settings import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
+from utils.quotes_action import get_quote , get_quote_from_db , post_quote
+from utils.google_perspective import perspective_client
+from utils.custom_discord_views import ToggleButton , MyView
+from utils.config_actions import load_config_for_user 
+from utils.wondermind import search_feeling
 
 class QuoteCog(commands.Cog):
     def __init__(self, bot):
         logging.info("QuoteCog Loaded")
-
-        """ SETUP CONNECTION WITH MONGODB """
-
         """GOOGLE PERSCEPCTIVE """
         PERSPECTIVE_API = os.environ['GOOGLE_PERSPECTIVE_KEY']
         self.my_perspective_client = perspective_client(PERSPECTIVE_API)
-
         """BOT"""
         self.bot = bot 
 
@@ -58,7 +60,6 @@ class QuoteCog(commands.Cog):
     @commands.command(name="dayly_quotes", description="")
     async def setup_dayly_quotes(self , interaction , time_hour: str):
         logging.info("Called QuoteCog.dayly_quotes")
-
         # Check that the time_hour string is in the correct format (HH:MM)
         if not re.match(r"^\d{2}:\d{2}$", time_hour):
             await interaction.response.send_message(
@@ -67,12 +68,10 @@ class QuoteCog(commands.Cog):
                 delete_after=10,
             )
             return
-
         # Check if the user has already activated dayly quotes
         logging.info("QuoteCog.dayly_quotes - reading user config ")
         user_config = load_config_for_user(interaction.user.id)
         active = user_config.get("dayly_quotes_config", {}).get(str(interaction.user.id), {}).get("dayly", 0)
-
         logging.info("QuoteCog.dayly_quotes - updating view ")
         view = MyView(when=time_hour, active=active)
         await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour} GMT ?", view=view, ephemeral=True)

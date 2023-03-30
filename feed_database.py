@@ -1,25 +1,27 @@
-from utils import quotes_collection
 import datetime
 import time
 import logging
-from tqdm import tqdm
-import asyncio 
-import aiohttp
 import json
+import asyncio 
 
+from tqdm import tqdm
+import aiohttp
 
+from utils import quotes_collection
 from colorama import init, Fore, Style
 init()
-message = "--------------FEED_DATABASE - MAKE SURE TO CHECK THE README-------------------"
-attribution = 'Inspirational quotes provided by Zen Quote API-"https://github.com/magnus-leksell/zen-quote"'
-print(f"{Fore.GREEN}{Style.BRIGHT}{message}{Style.RESET_ALL}")
-print(f"{Fore.RED}{Style.BRIGHT}{attribution}{Style.RESET_ALL}")
 
-N = int(input(f"{Fore.GREEN} NUMBER OF QUOTES TO PUSH TO DATABASE : {Style.RESET_ALL}"))
-
-
+message = "FEED_DATABASE - MAKE SURE TO CHECK THE README"
+attribution = 'Inspirational quotes provided by Zen Quote API-"{}"'.format("https://github.com/magnus-leksell/zen-quote")
 API_URL = "https://leksell.io/zen//api/quotes/random"
 
+def print_with_color(input):
+    print(f"{Fore.GREEN} {Style.BRIGHT} {input} {Style.RESET_ALL}")
+
+print_with_color(input=message)
+print_with_color(input=attribution)
+
+N = int(input(f"{Fore.GREEN} NUMBER OF QUOTES TO PUSH TO DATABASE : {Style.RESET_ALL}"))
 
 async def fetch_quote(session, url):
     async with session.get(url) as response:
@@ -38,7 +40,6 @@ def post_quote(quote_text, quote_author, last_posted_index):
     except Exception as e:
         print(e)
         logging.error(e)
-        return 0
 
 async def main(number_of_quotes):
     async with aiohttp.ClientSession() as session:
@@ -52,8 +53,7 @@ async def main(number_of_quotes):
             if (len(quote_list)) % (number_of_quotes/4) == 0:
                 num_sent = post_quote(quote_text=quote_list, quote_author=author_list, last_posted_index=last_posted_index)
                 last_posted_index += num_sent
-        print(f"{Fore.GREEN}{Style.BRIGHT}-------------{last_posted_index + 1} QUOTES SUCCESSFULLY SENDED TO DATABASE --------------{Style.RESET_ALL}")
-
+        print_with_color(input=f"{last_posted_index+1} QUOTES ADDED TO DATABASE")
 
 if __name__ == '__main__':
     asyncio.run(main(number_of_quotes=N))

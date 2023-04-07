@@ -38,7 +38,9 @@ def create_config_file(config_file_name="config.json"):
         json.dump(config_data, f, indent=4)
 
 try :
-    create_env_and_vars(DISCORD_BOT_TOKEN, MONGODB_CONN_LINK, GOOGLE_PERSPECTIVE_KEY)
+    create_env_and_vars(DISCORD_BOT_TOKEN, MONGODB_CONN_LINK, 
+                        GOOGLE_PERSPECTIVE_KEY, GOOGLE_CUSTOM_SEARCH_KEY, 
+                        GOOGLE_CUSTOM_SEARCH_ENGINE_ID)
     create_config_file()
     print(f"{Fore.GREEN} SETUP COMPLETED - RUN 'python3 main.py' TO START THE BOT {Style.RESET_ALL}")
 except Exception as e :

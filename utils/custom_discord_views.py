@@ -1,5 +1,5 @@
 import discord
-from utils.config_actions import update_dayly_quote_config
+from utils.config_utils import update_dayly_quote_config
 
 class ToggleButton(discord.ui.Button):
     def __init__(self, active, **kwargs):

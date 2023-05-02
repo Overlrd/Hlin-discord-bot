@@ -10,10 +10,10 @@ from pymongo import MongoClient
 import requests
 
 from settings import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
-from utils.quote_actions import get_quote , get_quote_from_db , post_quote
+from utils.quote_utils import Quote , get_quote_from_db , post_quote
 from utils.google_perspective import perspective_client
 from utils.custom_discord_views import ToggleButton , MyView
-from utils.config_actions import load_config_for_user 
+from utils.config_utils import load_config_for_user 
 from utils.wondermind import search_feeling
 
 class QuoteCog(commands.Cog):
@@ -43,9 +43,9 @@ class QuoteCog(commands.Cog):
 
         toxicity = self.my_perspective_client.analyze_quote(quote)
         logging.info(f"{quote} => {toxicity}")
-
+        NewQuote = Quote(interaction.user,quote)
         if toxicity < TOLERATED_TOXICITY:
-            await post_quote(quote, str(interaction.user))
+            post_quote(NewQuote)
             try :
                 await interaction.response.send_message(f"{quote} by  {interaction.user.mention}")
             except discord.errors.HTTPException as e:

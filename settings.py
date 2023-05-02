@@ -1,4 +1,5 @@
 import os 
+from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -16,10 +17,10 @@ CUSTOM_SEARCH_API = os.environ["GOOGLE_CUSTOM_SEARCH_KEY"]
 SEARCH_ENGINE_ID = os.environ["GOOGLE_CUSTOM_SEARCH_ENGINE_ID"]
 # Wondermind URL 
 CUSTOM_SEARCH_WONDERMIND_URL = "https://www.wondermind.com/article/"
-
-"""TOXICITY SCRORE"""
+#TOLERATED TOXICITY
 TOLERATED_TOXICITY = 0.6
-
-"""BOT INTENTS"""
+#BOT INTENTS
 INTENTS = discord.Intents.default()
-
+#CONFIG FILE PATH
+CONFIG_FILE_PATH = Path("config.json")
+DEFAULT_CONFIG = "dayly_quotes_config"

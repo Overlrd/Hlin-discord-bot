@@ -18,7 +18,7 @@ async def schedule_dayly_quotes(users_configs,bot):
     logging.info(f"Task Restarted at : {now}")
     logging.info(f"Reading {len(users_configs)} user's config")
     for user_id , config in users_configs.items():
-        if config['dayly'] == "1" and now == config['when']:
+        if config['dayly'] == True and now == config['when']:
             logging.info(f"{config['when']} => should send message")
             await send_dayly_quote_to_user(User_id=user_id, bot=bot)
 

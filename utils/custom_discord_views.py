@@ -14,7 +14,7 @@ class ToggleButton(discord.ui.Button):
         label = "Deactivate" if self.active else "Activate"
         self.label = label
         await interaction.response.edit_message(content=f"Moring Quotes. {current_state} ", view=self.view)
-        update_dayly_quote_config(interaction.user.id, int(self.active), when=self.view.when)
+        update_dayly_quote_config(interaction.user.id, dayly=self.active, when=self.view.when)
 
 
 class MyView(discord.ui.View):

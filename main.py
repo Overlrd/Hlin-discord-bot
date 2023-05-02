@@ -71,6 +71,9 @@ def main():
    #keep it alive for replit 
    #keep_alive()
    logging.basicConfig(filename="botlogs.log", level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', force=True)
+   console_handler = logging.StreamHandler()
+   console_handler.setLevel(logging.INFO)
+   logging.getLogger().addHandler(console_handler)
    bot.run(TOKEN)
 
 if __name__ == "__main__":

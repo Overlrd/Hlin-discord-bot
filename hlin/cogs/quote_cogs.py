@@ -55,7 +55,6 @@ class QuoteCog(commands.Cog):
                 await interaction.response.send_message(f"Your quote **{quote}** seems inapropriate ", ephemeral=True)
             except  discord.errors.HTTPException as e:
                 logging.warning(f"{e}")
-                
 
     @commands.command(name="dayly_quotes", description="")
     async def setup_dayly_quotes(self , interaction , time_hour: str):
@@ -85,12 +84,3 @@ class QuoteCog(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(QuoteCog(bot))
-
-
-
-
-
-
-    
-
-

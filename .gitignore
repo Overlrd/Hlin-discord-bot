@@ -4,10 +4,9 @@
 .venv/
 mongo.py
 todo.txt
-test.py
 config.json
 todo.txt
-test
+test/
 *.log
 *_old.py
 .idea/

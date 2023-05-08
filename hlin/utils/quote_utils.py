@@ -5,7 +5,7 @@ import requests
 from collections import namedtuple
 
 from pymongo import MongoClient
-from settings import API_URL , MONGO_CONN_LINK
+from hlin.settings import API_URL , MONGO_CONN_LINK
 
 Client_Mongo = MongoClient(MONGO_CONN_LINK)
 quotes_db = Client_Mongo.quotes
@@ -16,7 +16,7 @@ def get_quote():
   logging.info("utils-get_quote - getting quote from zenquotes.io")
   response = requests.get(API_URL)
   response_json = json.loads(response.text)
-  quote = response_json[0]['q'] + " -" + response_json[0]['a']
+  quote = response_json[0]['q'] + " - " + response_json[0]['a']
   return quote
 
 def get_quote_from_db():

@@ -18,7 +18,7 @@ import requests
 from utils.scheduled_quote_tasks import start_scheduled_task 
 #from utils import send_dayly_quote_to_user, schedule_dayly_quotes, start_scheduled_task,post_quote, load_config_for_user, MyView, ToggleButton , update_dayly_quote_config, my_perspective_client
 from keep_alive import keep_alive
-from settings import INTENTS
+from hlin.config import INTENTS
 
 """SETUP THE BOT"""
 load_dotenv()

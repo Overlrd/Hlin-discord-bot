@@ -5,7 +5,7 @@ import requests
 from collections import namedtuple
 
 from pymongo import MongoClient
-from hlin.settings import API_URL , MONGO_CONN_LINK
+from hlin.config import API_URL , MONGO_CONN_LINK
 
 Client_Mongo = MongoClient(MONGO_CONN_LINK)
 quotes_db = Client_Mongo.quotes

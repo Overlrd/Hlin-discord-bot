@@ -9,7 +9,7 @@ from discord.ext import commands
 from pymongo import MongoClient
 import requests
 
-from settings import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
+from hlin.config import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
 from utils.quote_utils import Quote , get_quote_from_db , post_quote
 from utils.google_perspective import perspective_client
 from utils.custom_discord_views import ToggleButton , MyView

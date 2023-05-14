@@ -2,7 +2,7 @@ import random
 
 from googleapiclient import discovery
 
-from settings import CUSTOM_SEARCH_WONDERMIND_URL
+from hlin.config import CUSTOM_SEARCH_WONDERMIND_URL
 
 def search_feeling(q, cx, key, num=10, start=1, linksite= CUSTOM_SEARCH_WONDERMIND_URL , alt='json'):
     search_params = {

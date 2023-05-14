@@ -7,7 +7,6 @@ import requests
 
 from hlin.utils.quote_utils import post_quote , get_quote , get_quote_from_db
 
-
 @pytest.fixture
 def expected_single_doc():
     """Represent a single doc the post_quote func will send to db"""

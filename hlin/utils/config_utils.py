@@ -1,6 +1,6 @@
 import logging
 import json 
-from settings import CONFIG_FILE_PATH , DEFAULT_CONFIG
+from hlin.config import CONFIG_FILE_PATH , DEFAULT_CONFIG
 
 def load_config_for_user(user_id="all", file_path="config.json", config="dayly_quotes_config"):
     logging.info("utils-load_config_for_user - loading user config from file")

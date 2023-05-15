@@ -1,5 +1,5 @@
 from tinydb import TinyDB , Query
-from hlin.config import Settings , DAILY_QUOTES_CFG_TABLE
+from config import Settings , DAILY_QUOTES_CFG_TABLE
 
 settings = Settings()
 
@@ -21,4 +21,12 @@ class UserConfig:
             return config
         else :
             config = self.table.search(self.User.discord_id == id)
-            return config
+            if config == []:
+                return {}
+            return config[0]
+    def search_config(self, **kwargs):
+        fragment = {}
+        for key , value in kwargs.items():
+            fragment[key] = value
+        return self.table.search(self.User.fragment(fragment))
+

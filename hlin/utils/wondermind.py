@@ -2,7 +2,7 @@ import random
 
 from googleapiclient import discovery
 
-from hlin.config import WONDERMIND_ENDPOINT
+from config import WONDERMIND_ENDPOINT  #  ss
 
 def search_by_feelings(q, cx, key, num=10, start=1, linksite= WONDERMIND_ENDPOINT , alt='json'):
     search_params = {

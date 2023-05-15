@@ -23,9 +23,13 @@ class Settings(BaseSettings):
 
 
 ZENQUOTES_API_URL =' https://zenquotes.io/api/random'
-WONDERMIND_ENDPOINT = "https://www.wondermind.com/article/"
+WONDERMIND_ENDPOINT = "https://www.wondermind.com/feelings/"
 TOLERATED_TOXICITY = 0.6
+
 INTENTS = discord.Intents.default()
-EXTENTIONS_LIST = ["cogs.quote_cogs",]
+INTENTS.message_content = True
+
+EXTENSIONS_LIST = ["cogs.quote_cogs",]
 LOCAL_DB_FILE = Path("db.json")
 DAILY_QUOTES_CFG_TABLE = "daily_quotes_config"
+BOT_VERSION = 1.1

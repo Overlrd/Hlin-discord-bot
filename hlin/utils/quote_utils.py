@@ -5,16 +5,17 @@ import requests
 from collections import namedtuple
 
 from pymongo import MongoClient
-from hlin.config import API_URL , MONGO_CONN_LINK
+from hlin.config import Settings , ZENQUOTES_API_URL
+settings = Settings
 
-Client_Mongo = MongoClient(MONGO_CONN_LINK)
+Client_Mongo = MongoClient(settings.mongodb_conn_link)
 quotes_db = Client_Mongo.quotes
 quotes_collection = quotes_db.quotes_collection
 Quote = namedtuple('quote',["author","content"])
 
 def get_quote():
   logging.info("utils-get_quote - getting quote from zenquotes.io")
-  response = requests.get(API_URL)
+  response = requests.get(ZENQUOTES_API_URL)
   response_json = json.loads(response.text)
   quote = response_json[0]['q'] + " - " + response_json[0]['a']
   return quote
@@ -26,7 +27,8 @@ def get_quote_from_db():
       quote = f"{i['quote']} - {i['author']}"
     return quote
 
-def post_quote(*args):
+def post_quote(*args:tuple):
+    """post quote takes one or multiple tuples formated as (author,quote)"""
     now = datetime.datetime.now().strftime("%y:%m:%d:%H:%M:%S")
     if len(args) <= 1:
         for quote in args:

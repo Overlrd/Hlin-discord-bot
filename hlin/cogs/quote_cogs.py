@@ -9,19 +9,20 @@ from discord.ext import commands
 from pymongo import MongoClient
 import requests
 
-from hlin.config import TOLERATED_TOXICITY , SEARCH_ENGINE_ID , CUSTOM_SEARCH_API
+from hlin.config import Settings , LOCAL_DB_FILE , DAILY_QUOTES_CFG_TABLE , TOLERATED_TOXICITY
 from utils.quote_utils import Quote , get_quote_from_db , post_quote
-from utils.google_perspective import perspective_client
-from utils.custom_discord_views import ToggleButton , MyView
-from utils.config_utils import load_config_for_user 
-from utils.wondermind import search_feeling
+from hlin.utils.perspective import perspective_client
+from hlin.utils.views import ToggleButton , MyView
+from hlin.utils.storage import UserConfig
+from utils.wondermind import search_by_feelings
+
+settings = Settings()
+cfg = UserConfig(LOCAL_DB_FILE)
 
 class QuoteCog(commands.Cog):
     def __init__(self, bot):
         logging.info("QuoteCog Loaded")
-        """GOOGLE PERSCEPCTIVE """
-        PERSPECTIVE_API = os.environ['GOOGLE_PERSPECTIVE_KEY']
-        self.my_perspective_client = perspective_client(PERSPECTIVE_API)
+        self.my_perspective_client = perspective_client(settings.google_perspective_key)
         """BOT"""
         self.bot = bot 
 
@@ -69,8 +70,8 @@ class QuoteCog(commands.Cog):
             return
         # Check if the user has already activated dayly quotes
         logging.info("QuoteCog.dayly_quotes - reading user config ")
-        user_config = load_config_for_user(interaction.user.id)
-        active = user_config.get("dayly_quotes_config", {}).get(str(interaction.user.id), {}).get("dayly", 0)
+        user_config = cfg.read_config(interaction.user.id)
+        active = user_config.get("daily", 0)
         logging.info("QuoteCog.dayly_quotes - updating view ")
         view = MyView(when=time_hour, active=active)
         await interaction.response.send_message(content=f"Activate Dayly Quotes at {time_hour} GMT ?", view=view, ephemeral=True)
@@ -78,7 +79,7 @@ class QuoteCog(commands.Cog):
     @commands.command(name="feeling")
     async def feelings(self, interaction , feeling : str):
         logging.info("called quotecog.feelings")
-        item = search_feeling(q=feeling,key=CUSTOM_SEARCH_API, cx=SEARCH_ENGINE_ID)
+        item = search_by_feelings(q=feeling,key=settings.google_custom_search_key, cx=settings.google_custom_search_engine_id)
         await interaction.response.send_message(content=f"{item['link']}", ephemeral=True)
 
 

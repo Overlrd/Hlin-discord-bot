@@ -1,5 +1,10 @@
 import discord
-from utils.config_utils import update_dayly_quote_config
+from hlin.utils.storage import UserConfig
+from hlin.config import Settings , LOCAL_DB_FILE
+
+settings = Settings()
+
+cfg = UserConfig(LOCAL_DB_FILE)
 
 class ToggleButton(discord.ui.Button):
     def __init__(self, active, **kwargs):
@@ -14,7 +19,8 @@ class ToggleButton(discord.ui.Button):
         label = "Deactivate" if self.active else "Activate"
         self.label = label
         await interaction.response.edit_message(content=f"Moring Quotes. {current_state} ", view=self.view)
-        update_dayly_quote_config(interaction.user.id, dayly=self.active, when=self.view.when)
+        doc = {"daily":self.active, "when":self.view.when}
+        cfg.write_config(interaction.user.id, doc)
 
 
 class MyView(discord.ui.View):
